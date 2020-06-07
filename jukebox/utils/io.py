@@ -2,6 +2,7 @@ import numpy as np
 import av
 import torch as t
 import jukebox.utils.dist_adapter as dist
+import librosa
 
 def get_duration_sec(file, cache=False):
     try:
@@ -9,9 +10,10 @@ def get_duration_sec(file, cache=False):
             duration = float(f.readline().strip('\n'))
         return duration
     except:
-        container = av.open(file)
-        audio = container.streams.get(audio=0)[0]
-        duration = audio.duration * float(audio.time_base)
+        # container = av.open(file)
+        # audio = container.streams.get(audio=0)[0]
+        # duration = audio.duration * float(audio.time_base)
+        duration = librosa.get_duration(file)
         if cache:
             with open(file + '.dur', 'w') as f:
                 f.write(str(duration) + '\n')

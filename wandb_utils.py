@@ -9,9 +9,9 @@ RUN_NAME = os.getenv('RUN_NAME')
 assert PROJECT != None, "Project needs to be specified in the PROJECT variable"
 
 def log_audio_file(audio_file_path, sample_rate):
-  wandb.log("audio-sample", wandb.Audio([
+  wandb.log("audio-sample", wandb.Audio(
     audio_file_path, sample_rate=sample_rate
-  ]))
+  ))
 
 def watch_model(model):
   if TRACKING_ACTIVE is None:
