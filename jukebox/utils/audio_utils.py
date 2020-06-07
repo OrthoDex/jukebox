@@ -4,6 +4,7 @@ import jukebox.utils.dist_adapter as dist
 import soundfile
 import librosa
 from jukebox.utils.dist_utils import print_once
+import wandb_utils
 
 class DefaultSTFTValues:
     def __init__(self, hps):
@@ -144,5 +145,4 @@ def save_wav(fname, aud, sr):
     aud = t.clamp(aud, -1, 1).cpu().numpy()
     for i in list(range(aud.shape[0])):
         soundfile.write(f'{fname}/item_{i}.wav', aud[i], samplerate=sr, format='wav')
-
-
+        wandb_utils.log_audio_file(f'{fname}/item_{i}.wav', sample_rate=sr)

@@ -21,6 +21,8 @@ from jukebox.utils.ema import CPUEMA, FusedEMA, EMA
 from jukebox.utils.fp16 import FP16FusedAdam, FusedAdam, LossScalar, clipped_grad_scale, backward
 from jukebox.data.data_processor import DataProcessor
 
+import wandb_utils
+
 def prepare_aud(x, hps):
     x = audio_postprocess(x.detach().contiguous(), hps)
     return allgather(x)
@@ -291,6 +293,9 @@ def train(model, orig_model, opt, shd, scalar, ema, logger, metrics, data_proces
 def run(hps="teeny", port=29500, **kwargs):
     from jukebox.utils.dist_utils import setup_dist_from_mpi
     rank, local_rank, device = setup_dist_from_mpi(port=port)
+
+    wandb_utils.setup_wandb()
+
     hps = setup_hparams(hps, kwargs)
     hps.ngpus = dist.get_world_size()
     hps.argv = " ".join(sys.argv)
@@ -308,6 +313,9 @@ def run(hps="teeny", port=29500, **kwargs):
         model = prior
     else:
         model = vqvae
+
+    wandb_utils.watch_model(model)
+    wandb_utils.log_hyperparams(hps)
 
     # Setup opt, ema and distributed_model.
     opt, shd, scalar = get_optimizer(model, hps)

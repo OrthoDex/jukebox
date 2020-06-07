@@ -11,6 +11,7 @@ from jukebox.save_html import save_html
 from jukebox.utils.sample_utils import split_batch, get_starts
 from jukebox.utils.dist_utils import print_once
 import fire
+import wandb_utils
 
 # Sample a partial window of length<n_ctx with tokens_to_sample new tokens on level=level
 def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_sample, hps):
@@ -176,6 +177,8 @@ def save_samples(model, device, hps, sample_hps):
     from jukebox.lyricdict import poems, gpt_2_lyrics
     vqvae, priors = make_model(model, device, hps)
 
+    wandb_utils.watch_model(vqvae)
+
     assert hps.sample_length//priors[-2].raw_to_tokens >= priors[-2].n_ctx, f"Upsampling needs atleast one ctx in get_z_conds. Please choose a longer sample length"
 
     total_length = hps.total_sample_length_in_seconds * hps.sr
@@ -261,13 +264,13 @@ def save_samples(model, device, hps, sample_hps):
     else:
         raise ValueError(f'Unknown sample mode {sample_hps.mode}.')
 
-
 def run(model, mode='ancestral', codes_file=None, audio_file=None, prompt_length_in_seconds=None, port=29500, **kwargs):
     from jukebox.utils.dist_utils import setup_dist_from_mpi
     rank, local_rank, device = setup_dist_from_mpi(port=port)
+    wandb_utils.setup_wandb()
     hps = Hyperparams(**kwargs)
     sample_hps = Hyperparams(dict(mode=mode, codes_file=codes_file, audio_file=audio_file, prompt_length_in_seconds=prompt_length_in_seconds))
-
+    wandb_utils.log_hyperparams({"hps": hps, "sample_hps": sample_hps})
     with t.no_grad():
         save_samples(model, device, hps, sample_hps)
 
