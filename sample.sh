@@ -11,12 +11,15 @@ echo $RUN_NAME
 read -p "Enter path to sample audio file (comma separated if multiple)" SAMPLE_FILES
 
 export WANDB=True
+export PROJECT=$PROJECT
+export ENTITY=$ENTITY
+export RUN_NAME=$RUN_NAME
 
 python jukebox/sample.py \
   --model=1b_lyrics \
   --name=sample_5b_prompted \
   --levels=3 --mode=primed \
-  --audio_file=SAMPLE_FILES \
+  --audio_file=$SAMPLE_FILES \
   --prompt_length_in_seconds=12 --port=29406 \
   --sample_length_in_seconds=20 \
   --total_sample_length_in_seconds=180 \
